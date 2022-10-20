@@ -16,8 +16,8 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/spec"
+	consensusclient "github.com/foundryservices/go-eth2-client"
+	"github.com/foundryservices/go-eth2-client/spec"
 )
 
 // SignedBeaconBlock fetches a signed beacon block given a block ID.

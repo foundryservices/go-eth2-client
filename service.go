@@ -17,12 +17,12 @@ import (
 	"context"
 	"time"
 
-	api "github.com/attestantio/go-eth2-client/api"
-	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/altair"
-	"github.com/attestantio/go-eth2-client/spec/capella"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	api "github.com/foundryservices/go-eth2-client/api"
+	apiv1 "github.com/foundryservices/go-eth2-client/api/v1"
+	"github.com/foundryservices/go-eth2-client/spec"
+	"github.com/foundryservices/go-eth2-client/spec/altair"
+	"github.com/foundryservices/go-eth2-client/spec/capella"
+	"github.com/foundryservices/go-eth2-client/spec/phase0"
 )
 
 // Service is the service providing a connection to an Ethereum 2 client.

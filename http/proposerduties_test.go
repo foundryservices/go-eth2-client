@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/http"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	client "github.com/foundryservices/go-eth2-client"
+	"github.com/foundryservices/go-eth2-client/http"
+	"github.com/foundryservices/go-eth2-client/spec/phase0"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )

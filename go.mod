@@ -23,5 +23,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gotest.tools v2.2.0+incompatible
 )
-
-replace github.com/attestantio/go-eth2-client => github.com/foundryservices/go-eth2-client v0.11.7

@@ -18,8 +18,8 @@ import (
 	"os"
 	"testing"
 
-	client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/http"
+	client "github.com/foundryservices/go-eth2-client"
+	"github.com/foundryservices/go-eth2-client/http"
 	"github.com/stretchr/testify/require"
 )
 

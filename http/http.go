@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/foundryservices/go-eth2-client/spec"
 	"github.com/pkg/errors"
 )
 

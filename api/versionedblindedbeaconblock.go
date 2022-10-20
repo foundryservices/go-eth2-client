@@ -16,10 +16,10 @@ package api
 import (
 	"errors"
 
-	apiv1 "github.com/attestantio/go-eth2-client/api/v1"
-	"github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/bellatrix"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	apiv1 "github.com/foundryservices/go-eth2-client/api/v1"
+	"github.com/foundryservices/go-eth2-client/spec"
+	"github.com/foundryservices/go-eth2-client/spec/bellatrix"
+	"github.com/foundryservices/go-eth2-client/spec/phase0"
 )
 
 // VersionedBlindedBeaconBlock contains a versioned blinded beacon block.
