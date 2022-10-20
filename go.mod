@@ -1,4 +1,4 @@
-module github.com/attestantio/go-eth2-client
+module github.com/foundryservices/go-eth2-client
 
 go 1.14
 
@@ -24,4 +24,4 @@ require (
 	gotest.tools v2.2.0+incompatible
 )
 
-replace github.com/attestantio/go-eth2-client => github.com/foundryservices/go-eth2-client v0.11.6
+replace github.com/attestantio/go-eth2-client => github.com/foundryservices/go-eth2-client v0.11.7
