@@ -23,9 +23,9 @@ import (
 	"sync"
 	"time"
 
-	eth2client "github.com/foundryservices/go-eth2-client"
-	api "github.com/foundryservices/go-eth2-client/api/v1"
-	"github.com/foundryservices/go-eth2-client/spec/phase0"
+	eth2client "github.com/attestantio/go-eth2-client"
+	api "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	zerologger "github.com/rs/zerolog/log"

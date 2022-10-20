@@ -16,8 +16,8 @@ package mock
 import (
 	"context"
 
-	api "github.com/foundryservices/go-eth2-client/api/v1"
-	spec "github.com/foundryservices/go-eth2-client/spec/phase0"
+	api "github.com/attestantio/go-eth2-client/api/v1"
+	spec "github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
 // ProposerDuties obtains proposer duties for the given epoch.

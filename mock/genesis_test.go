@@ -17,7 +17,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/foundryservices/go-eth2-client/mock"
+	"github.com/attestantio/go-eth2-client/mock"
 	"github.com/stretchr/testify/require"
 )
 

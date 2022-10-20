@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/foundryservices/go-eth2-client/spec/phase0"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )

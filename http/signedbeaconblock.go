@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/foundryservices/go-eth2-client/spec"
-	"github.com/foundryservices/go-eth2-client/spec/altair"
-	"github.com/foundryservices/go-eth2-client/spec/bellatrix"
-	"github.com/foundryservices/go-eth2-client/spec/capella"
-	"github.com/foundryservices/go-eth2-client/spec/phase0"
+	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/bellatrix"
+	"github.com/attestantio/go-eth2-client/spec/capella"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/pkg/errors"
 )
 

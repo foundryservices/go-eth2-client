@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/foundryservices/go-eth2-client/spec/capella"
+	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/goccy/go-yaml"
 	"github.com/golang/snappy"
 	require "github.com/stretchr/testify/require"

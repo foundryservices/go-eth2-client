@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/foundryservices/go-eth2-client/spec/capella"
+	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/pkg/errors"
 )
 

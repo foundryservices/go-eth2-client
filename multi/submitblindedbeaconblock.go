@@ -16,8 +16,8 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/foundryservices/go-eth2-client"
-	"github.com/foundryservices/go-eth2-client/api"
+	consensusclient "github.com/attestantio/go-eth2-client"
+	"github.com/attestantio/go-eth2-client/api"
 )
 
 // SubmitBlindedBeaconBlock submits a blinded beacon block.

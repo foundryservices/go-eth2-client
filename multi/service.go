@@ -17,8 +17,8 @@ import (
 	"context"
 	"sync"
 
-	consensusclient "github.com/foundryservices/go-eth2-client"
-	"github.com/foundryservices/go-eth2-client/http"
+	consensusclient "github.com/attestantio/go-eth2-client"
+	"github.com/attestantio/go-eth2-client/http"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	zerologger "github.com/rs/zerolog/log"

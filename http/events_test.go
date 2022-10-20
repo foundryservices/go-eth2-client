@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	client "github.com/foundryservices/go-eth2-client"
-	api "github.com/foundryservices/go-eth2-client/api/v1"
-	"github.com/foundryservices/go-eth2-client/http"
+	client "github.com/attestantio/go-eth2-client"
+	api "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/http"
 	"github.com/stretchr/testify/require"
 )
 

@@ -16,7 +16,7 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/foundryservices/go-eth2-client"
+	consensusclient "github.com/attestantio/go-eth2-client"
 )
 
 // NodeVersion provides the version information of the node.

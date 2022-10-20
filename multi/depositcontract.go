@@ -16,8 +16,8 @@ package multi
 import (
 	"context"
 
-	consensusclient "github.com/foundryservices/go-eth2-client"
-	api "github.com/foundryservices/go-eth2-client/api/v1"
+	consensusclient "github.com/attestantio/go-eth2-client"
+	api "github.com/attestantio/go-eth2-client/api/v1"
 )
 
 // DepositContract provides details of the Ethereum 1 deposit contract for the chain.

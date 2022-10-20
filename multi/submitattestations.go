@@ -17,8 +17,8 @@ import (
 	"context"
 	"strings"
 
-	consensusclient "github.com/foundryservices/go-eth2-client"
-	"github.com/foundryservices/go-eth2-client/spec/phase0"
+	consensusclient "github.com/attestantio/go-eth2-client"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
 // SubmitAttestations submits attestations.

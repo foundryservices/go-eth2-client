@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/foundryservices/go-eth2-client/spec/altair"
-	"github.com/foundryservices/go-eth2-client/spec/bellatrix"
-	"github.com/foundryservices/go-eth2-client/spec/phase0"
+	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/bellatrix"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )
