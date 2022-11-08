@@ -26,6 +26,7 @@ type parameters struct {
 	timeout         time.Duration
 	indexChunkSize  int
 	pubKeyChunkSize int
+	traceClient     bool
 }
 
 // Parameter is the interface for service parameters.
@@ -71,6 +72,12 @@ func WithIndexChunkSize(indexChunkSize int) Parameter {
 func WithPubKeyChunkSize(pubKeyChunkSize int) Parameter {
 	return parameterFunc(func(p *parameters) {
 		p.pubKeyChunkSize = pubKeyChunkSize
+	})
+}
+
+func WithTracedClient(shouldTraceClient bool) Parameter {
+	return parameterFunc(func(p *parameters) {
+		p.traceClient = shouldTraceClient
 	})
 }
 

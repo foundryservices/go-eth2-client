@@ -29,6 +29,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	zerologger "github.com/rs/zerolog/log"
+	httptrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
 )
 
 // Service is an Ethereum 2 client service.
@@ -93,6 +94,9 @@ func New(ctx context.Context, params ...Parameter) (eth2client.Service, error) {
 			MaxIdleConnsPerHost: 64,
 			IdleConnTimeout:     600 * time.Second,
 		},
+	}
+	if parameters.traceClient {
+		client = httptrace.WrapClient(client)
 	}
 
 	address := parameters.address
