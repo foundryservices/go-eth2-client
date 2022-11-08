@@ -18,6 +18,6 @@ require (
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
-	gopkg.in/DataDog/dd-trace-go.v1 v1.43.1 // indirect
+	gopkg.in/DataDog/dd-trace-go.v1 v1.43.1
 	gotest.tools v2.2.0+incompatible
 )
