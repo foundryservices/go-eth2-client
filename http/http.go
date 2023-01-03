@@ -82,7 +82,7 @@ func (s *Service) get(ctx context.Context, endpoint string, options ...GetOption
 	}
 
 	// if the user did not specify an accept header, default to 'Accept: application/json'
-	if req.Header.Get("Accept") == "" {
+	if _, ok := req.Header["Accept"]; !ok {
 		req.Header.Set("Accept", "application/json")
 	}
 
