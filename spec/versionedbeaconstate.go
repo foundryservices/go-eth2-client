@@ -56,3 +56,22 @@ func (v *VersionedBeaconState) String() string {
 		return "unknown version"
 	}
 }
+
+type BeaconStateOption func(*BeaconStateRequestConfig)
+
+func WithEncoding(enc Encoding) BeaconStateOption {
+	return func(cfg *BeaconStateRequestConfig) {
+		cfg.Enc = enc
+	}
+}
+
+type Encoding string
+
+const (
+	JSONEncoding Encoding = "json"
+	SSZEncoding  Encoding = "ssz"
+)
+
+type BeaconStateRequestConfig struct {
+	Enc Encoding
+}

@@ -289,13 +289,13 @@ func (s *Sleepy) SubmitValidatorRegistrations(ctx context.Context, registrations
 }
 
 // BeaconState fetches a beacon state.
-func (s *Sleepy) BeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
+func (s *Sleepy) BeaconState(ctx context.Context, stateID string, options ...spec.BeaconStateOption) (*spec.VersionedBeaconState, error) {
 	s.sleep(ctx)
 	next, isNext := s.next.(consensusclient.BeaconStateProvider)
 	if !isNext {
 		return nil, errors.New("next does not support this call")
 	}
-	return next.BeaconState(ctx, stateID)
+	return next.BeaconState(ctx, stateID, options...)
 }
 
 // Events feeds requested events with the given topics to the supplied handler.

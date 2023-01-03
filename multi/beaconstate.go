@@ -22,9 +22,9 @@ import (
 
 // BeaconState fetches a beacon state.
 // N.B if the requested beacon state is not available this will return nil without an error.
-func (s *Service) BeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
+func (s *Service) BeaconState(ctx context.Context, stateID string, options ...spec.BeaconStateOption) (*spec.VersionedBeaconState, error) {
 	res, err := s.doCall(ctx, func(ctx context.Context, client consensusclient.Service) (interface{}, error) {
-		beaconState, err := client.(consensusclient.BeaconStateProvider).BeaconState(ctx, stateID)
+		beaconState, err := client.(consensusclient.BeaconStateProvider).BeaconState(ctx, stateID, options...)
 		if err != nil {
 			return nil, err
 		}

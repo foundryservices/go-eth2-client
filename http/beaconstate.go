@@ -46,29 +46,10 @@ type capellaBeaconStateJSON struct {
 	Data *capella.BeaconState `json:"data"`
 }
 
-type encoding string
-
-const (
-	JSONEncoding encoding = "json"
-	SSZEncoding  encoding = "ssz"
-)
-
-type BeaconStateRequestConfig struct {
-	enc encoding
-}
-
-type BeaconStateOption func(*BeaconStateRequestConfig)
-
-func WithEncoding(enc encoding) BeaconStateOption {
-	return func(cfg *BeaconStateRequestConfig) {
-		cfg.enc = enc
-	}
-}
-
 // BeaconState fetches a beacon state.
 // N.B if the requested beacon state is not available this will return nil without an error.
-func (s *Service) BeaconState(ctx context.Context, stateID string, options ...BeaconStateOption) (*spec.VersionedBeaconState, error) {
-	var cfg BeaconStateRequestConfig
+func (s *Service) BeaconState(ctx context.Context, stateID string, options ...spec.BeaconStateOption) (*spec.VersionedBeaconState, error) {
+	var cfg spec.BeaconStateRequestConfig
 	for _, opt := range options {
 		opt(&cfg)
 	}
@@ -80,8 +61,8 @@ func (s *Service) BeaconState(ctx context.Context, stateID string, options ...Be
 }
 
 // beaconStateV1 fetches a beacon state from the V1 endpoint.
-func (s *Service) beaconStateV1(ctx context.Context, stateID string, cfg BeaconStateRequestConfig) (*spec.VersionedBeaconState, error) {
-	headerKey, headerValue, err := encodingToHeader(cfg.enc)
+func (s *Service) beaconStateV1(ctx context.Context, stateID string, cfg spec.BeaconStateRequestConfig) (*spec.VersionedBeaconState, error) {
+	headerKey, headerValue, err := encodingToHeader(cfg.Enc)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +76,7 @@ func (s *Service) beaconStateV1(ctx context.Context, stateID string, cfg BeaconS
 		return nil, nil
 	}
 
-	if cfg.enc == SSZEncoding {
+	if cfg.Enc == spec.SSZEncoding {
 		var resp phase0.BeaconState
 		if err = unmarshalSSZFromReader(respBodyReader, &resp); err != nil {
 			return nil, err
@@ -120,8 +101,8 @@ func (s *Service) beaconStateV1(ctx context.Context, stateID string, cfg BeaconS
 }
 
 // beaconStateV2 fetches a beacon state from the V2 endpoint.
-func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg BeaconStateRequestConfig) (*spec.VersionedBeaconState, error) {
-	headerKey, headerValue, err := encodingToHeader(cfg.enc)
+func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg spec.BeaconStateRequestConfig) (*spec.VersionedBeaconState, error) {
+	headerKey, headerValue, err := encodingToHeader(cfg.Enc)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +130,7 @@ func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg BeaconS
 		return nil, nil
 	}
 
-	if cfg.enc == SSZEncoding {
+	if cfg.Enc == spec.SSZEncoding {
 		return parseSSZBeaconState(respBodyReader, version)
 	}
 	return parseJSONBeconState(respBodyReader)
@@ -229,11 +210,11 @@ func parseSSZBeaconState(respBodyReader io.Reader, version spec.DataVersion) (*s
 	return res, nil
 }
 
-func encodingToHeader(enc encoding) (string, string, error) {
-	if enc == "" || enc == JSONEncoding {
+func encodingToHeader(enc spec.Encoding) (string, string, error) {
+	if enc == "" || enc == spec.JSONEncoding {
 		return "Accept", "application/json", nil
 	}
-	if enc == SSZEncoding {
+	if enc == spec.SSZEncoding {
 		return "Accpet", "applicaiton/octet-stream", nil
 	}
 	return "", "", errors.New("unknown encoding")

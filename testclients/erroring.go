@@ -405,7 +405,7 @@ func (s *Erroring) SubmitSyncCommitteeSubscriptions(ctx context.Context, subscri
 }
 
 // BeaconState fetches a beacon state.
-func (s *Erroring) BeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
+func (s *Erroring) BeaconState(ctx context.Context, stateID string, options ...spec.BeaconStateOption) (*spec.VersionedBeaconState, error) {
 	if err := s.maybeError(ctx); err != nil {
 		return nil, err
 	}
@@ -413,7 +413,7 @@ func (s *Erroring) BeaconState(ctx context.Context, stateID string) (*spec.Versi
 	if !isNext {
 		return nil, fmt.Errorf("%s@%s does not support this call", s.next.Name(), s.next.Address())
 	}
-	return next.BeaconState(ctx, stateID)
+	return next.BeaconState(ctx, stateID, options...)
 }
 
 // Events feeds requested events with the given topics to the supplied handler.

@@ -258,7 +258,7 @@ type BeaconCommitteeSubscriptionsSubmitter interface {
 // BeaconStateProvider is the interface for providing beacon state.
 type BeaconStateProvider interface {
 	// BeaconState fetches a beacon state given a state ID.
-	BeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
+	BeaconState(ctx context.Context, stateID string, options ...spec.BeaconStateOption) (*spec.VersionedBeaconState, error)
 }
 
 // BeaconStateRootProvider is the interface for providing beacon state roots.
