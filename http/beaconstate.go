@@ -19,12 +19,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/bellatrix"
 	"github.com/attestantio/go-eth2-client/spec/capella"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
+	ssz "github.com/ferranbt/fastssz"
 	"github.com/pkg/errors"
 )
 
@@ -44,19 +46,48 @@ type capellaBeaconStateJSON struct {
 	Data *capella.BeaconState `json:"data"`
 }
 
+type encoding string
+
+const (
+	JSONEncoding encoding = "json"
+	SSZEncoding  encoding = "ssz"
+)
+
+type BeaconStateRequestConfig struct {
+	enc encoding
+}
+
+type BeaconStateOption func(*BeaconStateRequestConfig)
+
+func WithEncoding(enc encoding) BeaconStateOption {
+	return func(cfg *BeaconStateRequestConfig) {
+		cfg.enc = enc
+	}
+}
+
 // BeaconState fetches a beacon state.
 // N.B if the requested beacon state is not available this will return nil without an error.
-func (s *Service) BeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
-	if s.supportsV2BeaconState {
-		return s.beaconStateV2(ctx, stateID)
+func (s *Service) BeaconState(ctx context.Context, stateID string, options ...BeaconStateOption) (*spec.VersionedBeaconState, error) {
+	var cfg BeaconStateRequestConfig
+	for _, opt := range options {
+		opt(&cfg)
 	}
-	return s.beaconStateV1(ctx, stateID)
+
+	if s.supportsV2BeaconState {
+		return s.beaconStateV2(ctx, stateID, cfg)
+	}
+	return s.beaconStateV1(ctx, stateID, cfg)
 }
 
 // beaconStateV1 fetches a beacon state from the V1 endpoint.
-func (s *Service) beaconStateV1(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
+func (s *Service) beaconStateV1(ctx context.Context, stateID string, cfg BeaconStateRequestConfig) (*spec.VersionedBeaconState, error) {
+	headerKey, headerValue, err := encodingToHeader(cfg.enc)
+	if err != nil {
+		return nil, err
+	}
+
 	url := fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID)
-	respBodyReader, err := s.get(ctx, url)
+	respBodyReader, err := s.get(ctx, url, WithHeader(headerKey, headerValue))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to request beacon state")
 	}
@@ -64,6 +95,19 @@ func (s *Service) beaconStateV1(ctx context.Context, stateID string) (*spec.Vers
 		return nil, nil
 	}
 
+	if cfg.enc == SSZEncoding {
+		var resp phase0.BeaconState
+		if err = unmarshalSSZFromReader(respBodyReader, &resp); err != nil {
+			return nil, err
+		}
+
+		return &spec.VersionedBeaconState{
+			Version: spec.DataVersionPhase0,
+			Phase0:  &resp,
+		}, nil
+	}
+
+	// if ssz encoding not specified, assume json encoding
 	var resp phase0BeaconStateJSON
 	if err := json.NewDecoder(respBodyReader).Decode(&resp); err != nil {
 		return nil, errors.Wrap(err, "failed to parse beacon state")
@@ -76,9 +120,27 @@ func (s *Service) beaconStateV1(ctx context.Context, stateID string) (*spec.Vers
 }
 
 // beaconStateV2 fetches a beacon state from the V2 endpoint.
-func (s *Service) beaconStateV2(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
+func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg BeaconStateRequestConfig) (*spec.VersionedBeaconState, error) {
+	headerKey, headerValue, err := encodingToHeader(cfg.enc)
+	if err != nil {
+		return nil, err
+	}
+
+	// when the state is ssz encoded, the version of the beacon state is contained in the
+	// http responose headers, this function allows us to extract that header via a closure
+	var version spec.DataVersion
+	versionViewerFn := func(resp http.Response) {
+		version.UnmarshalJSON([]byte(resp.Header.Get("Eth-Consensus-Version")))
+	}
+
 	url := fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID)
-	respBodyReader, err := s.get(ctx, url)
+
+	respBodyReader, err := s.get(
+		ctx,
+		url,
+		WithHeader(headerKey, headerValue),
+		WithResponseViewer(versionViewerFn),
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to request beacon state")
 	}
@@ -86,6 +148,13 @@ func (s *Service) beaconStateV2(ctx context.Context, stateID string) (*spec.Vers
 		return nil, nil
 	}
 
+	if cfg.enc == SSZEncoding {
+		return parseSSZBeaconState(respBodyReader, version)
+	}
+	return parseJSONBeconState(respBodyReader)
+}
+
+func parseJSONBeconState(respBodyReader io.Reader) (*spec.VersionedBeaconState, error) {
 	var dataBodyReader bytes.Buffer
 	metadataReader := io.TeeReader(respBodyReader, &dataBodyReader)
 	var metadata responseMetadata
@@ -100,28 +169,80 @@ func (s *Service) beaconStateV2(ctx context.Context, stateID string) (*spec.Vers
 	case spec.DataVersionPhase0:
 		var resp phase0BeaconStateJSON
 		if err := json.NewDecoder(&dataBodyReader).Decode(&resp); err != nil {
-			return nil, errors.Wrap(err, "failed to parse phase 0 beacon state")
+			return nil, errors.Wrap(err, "failed to parse json encoded phase 0 beacon state")
 		}
 		res.Phase0 = resp.Data
 	case spec.DataVersionAltair:
 		var resp altairBeaconStateJSON
 		if err := json.NewDecoder(&dataBodyReader).Decode(&resp); err != nil {
-			return nil, errors.Wrap(err, "failed to parse altair beacon state")
+			return nil, errors.Wrap(err, "failed to parse json encoded altair beacon state")
 		}
 		res.Altair = resp.Data
 	case spec.DataVersionBellatrix:
 		var resp bellatrixBeaconStateJSON
 		if err := json.NewDecoder(&dataBodyReader).Decode(&resp); err != nil {
-			return nil, errors.Wrap(err, "failed to parse bellatrix beacon state")
+			return nil, errors.Wrap(err, "failed to parse json encoded bellatrix beacon state")
 		}
 		res.Bellatrix = resp.Data
 	case spec.DataVersionCapella:
 		var resp capellaBeaconStateJSON
 		if err := json.NewDecoder(&dataBodyReader).Decode(&resp); err != nil {
-			return nil, errors.Wrap(err, "failed to parse capella beacon state")
+			return nil, errors.Wrap(err, "failed to parse json encoded capella beacon state")
 		}
 		res.Capella = resp.Data
 	}
 
 	return res, nil
+}
+
+func parseSSZBeaconState(respBodyReader io.Reader, version spec.DataVersion) (*spec.VersionedBeaconState, error) {
+	res := &spec.VersionedBeaconState{Version: version}
+	switch version {
+	case spec.DataVersionPhase0:
+		var resp phase0.BeaconState
+		if err := unmarshalSSZFromReader(respBodyReader, &resp); err != nil {
+			return nil, errors.Wrap(err, "failed to parse ssz encoded phase0 beacon state")
+		}
+		res.Phase0 = &resp
+	case spec.DataVersionAltair:
+		var resp altair.BeaconState
+		if err := unmarshalSSZFromReader(respBodyReader, &resp); err != nil {
+			return nil, errors.Wrap(err, "failed to parse ssz encoded altair beacon state")
+		}
+		res.Altair = &resp
+	case spec.DataVersionBellatrix:
+		var resp bellatrix.BeaconState
+		if err := unmarshalSSZFromReader(respBodyReader, &resp); err != nil {
+			return nil, errors.Wrap(err, "failed to parse ssz encoded bellatrix beacon state")
+		}
+		res.Bellatrix = &resp
+	case spec.DataVersionCapella:
+		var resp capella.BeaconState
+		if err := unmarshalSSZFromReader(respBodyReader, &resp); err != nil {
+			return nil, errors.Wrap(err, "failed to parse ssz encoded capella beacon state")
+		}
+		res.Capella = &resp
+	}
+	return res, nil
+}
+
+func encodingToHeader(enc encoding) (string, string, error) {
+	if enc == "" || enc == JSONEncoding {
+		return "Accept", "application/json", nil
+	}
+	if enc == SSZEncoding {
+		return "Accpet", "applicaiton/octet-stream", nil
+	}
+	return "", "", errors.New("unknown encoding")
+}
+
+func unmarshalSSZFromReader(r io.Reader, to ssz.Unmarshaler) error {
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(r); err != nil {
+		return errors.Wrap(err, "failed to read ssz encoded reader into buffer")
+	}
+	if err := to.UnmarshalSSZ(buf.Bytes()); err != nil {
+		return errors.Wrap(err, "failed to unmaral ssz encoded reader")
+	}
+	return nil
 }
