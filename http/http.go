@@ -36,9 +36,30 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+type GetOption func(r *http.Request, resp *http.Response)
+
+// WithHeader allows for users to set headers on their GET request.
+func WithHeader(key, value string) GetOption {
+	return func(r *http.Request, resp *http.Response) {
+		if r != nil {
+			r.Header.Add(key, value)
+		}
+	}
+}
+
+// WithResponseViewer allows for users to peek at the http response.
+// Users can extract values such as headers via a closure
+func WithResponseViewer(viewer func(resp http.Response)) GetOption {
+	return func(r *http.Request, resp *http.Response) {
+		if resp != nil {
+			viewer(*resp)
+		}
+	}
+}
+
 // get sends an HTTP get request and returns the body.
 // If the response from the server is a 404 this will return nil for both the reader and the error.
-func (s *Service) get(ctx context.Context, endpoint string) (io.Reader, error) {
+func (s *Service) get(ctx context.Context, endpoint string, options ...GetOption) (io.Reader, error) {
 	// #nosec G404
 	log := s.log.With().Str("id", fmt.Sprintf("%02x", rand.Int31())).Str("address", s.address).Str("endpoint", endpoint).Logger()
 	log.Trace().Msg("GET request")
@@ -54,7 +75,17 @@ func (s *Service) get(ctx context.Context, endpoint string) (io.Reader, error) {
 		cancel()
 		return nil, errors.Wrap(err, "failed to create GET request")
 	}
-	req.Header.Set("Accept", "application/json")
+
+	// apply user supplied options to the request
+	for _, opt := range options {
+		opt(req, nil)
+	}
+
+	// if the user did not specify an accept header, default to 'Accept: application/json'
+	if req.Header.Get("Accept") == "" {
+		req.Header.Set("Accept", "application/json")
+	}
+
 	resp, err := s.client.Do(req)
 	if err != nil {
 		cancel()
@@ -65,6 +96,11 @@ func (s *Service) get(ctx context.Context, endpoint string) (io.Reader, error) {
 		// Nothing found.  This is not an error, so we return nil on both counts.
 		cancel()
 		return nil, nil
+	}
+
+	// apply user supplied options to the response
+	for _, opt := range options {
+		opt(nil, resp)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
