@@ -130,7 +130,8 @@ func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg BeaconS
 	// http responose headers, this function allows us to extract that header via a closure
 	var version spec.DataVersion
 	versionViewerFn := func(resp http.Response) {
-		version.UnmarshalJSON([]byte(resp.Header.Get("Eth-Consensus-Version")))
+		_ = version.UnmarshalJSON([]byte(resp.Header.Get("Eth-Consensus-Version")))
+		// if this unmarshal errored we will catch it when parse the ssz struct
 	}
 
 	url := fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID)
@@ -222,6 +223,8 @@ func parseSSZBeaconState(respBodyReader io.Reader, version spec.DataVersion) (*s
 			return nil, errors.Wrap(err, "failed to parse ssz encoded capella beacon state")
 		}
 		res.Capella = &resp
+	default:
+		return nil, errors.Errorf("invalid version %s", version.String())
 	}
 	return res, nil
 }
