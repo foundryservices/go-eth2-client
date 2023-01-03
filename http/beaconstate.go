@@ -215,7 +215,7 @@ func encodingToHeader(enc spec.Encoding) (string, string, error) {
 		return "Accept", "application/json", nil
 	}
 	if enc == spec.SSZEncoding {
-		return "Accpet", "application/octet-stream", nil
+		return "Accept", "application/octet-stream", nil
 	}
 	return "", "", errors.New("unknown encoding")
 }
