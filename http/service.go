@@ -37,9 +37,6 @@ type Service struct {
 	// log is a service-wide logger.
 	log zerolog.Logger
 
-	// Hold the initialising context to use for streams.
-	ctx context.Context
-
 	base    *url.URL
 	address string
 	client  *http.Client
@@ -113,7 +110,6 @@ func New(ctx context.Context, params ...Parameter) (eth2client.Service, error) {
 
 	s := &Service{
 		log:                 log,
-		ctx:                 ctx,
 		base:                base,
 		address:             parameters.address,
 		client:              client,

@@ -83,19 +83,6 @@ type TargetAggregatorsPerCommitteeProvider interface {
 	TargetAggregatorsPerCommittee(ctx context.Context) (uint64, error)
 }
 
-// BeaconChainHeadUpdatedSource is the interface for a service that provides beacon chain head updates.
-type BeaconChainHeadUpdatedSource interface {
-	// AddOnBeaconChainHeadUpdatedHandler adds a handler provided with beacon chain head updates.
-	AddOnBeaconChainHeadUpdatedHandler(ctx context.Context, handler BeaconChainHeadUpdatedHandler) error
-}
-
-// BeaconChainHeadUpdatedHandler is the interface that needs to be implemented by processes that wish
-// to receive beacon chain head updated messages.
-type BeaconChainHeadUpdatedHandler interface {
-	// OnBeaconChainHeadUpdated is called whenever we receive a notification of an update to the beacon chain head.
-	OnBeaconChainHeadUpdated(ctx context.Context, slot uint64, blockRoot []byte, stateRoot []byte, epochTransition bool)
-}
-
 // ValidatorIndexProvider is the interface for entities that can provide the index of a validator.
 type ValidatorIndexProvider interface {
 	// Index provides the index of the validator.
@@ -219,10 +206,10 @@ type SyncCommitteeContributionsSubmitter interface {
 	SubmitSyncCommitteeContributions(ctx context.Context, contributionAndProofs []*altair.SignedContributionAndProof) error
 }
 
-// BLSToExecutionChangeSubmitter is the interface for submitting BLS to execution address changes.
-type BLSToExecutionChangeSubmitter interface {
-	// SubmitBLSToExecutionChange submits a BLS to execution address change operation.
-	SubmitBLSToExecutionChange(ctx context.Context, blsToExecutionChange *capella.SignedBLSToExecutionChange) error
+// BLSToExecutionChangesSubmitter is the interface for submitting BLS to execution address changes.
+type BLSToExecutionChangesSubmitter interface {
+	// SubmitBLSToExecutionChanges submits BLS to execution address change operations.
+	SubmitBLSToExecutionChanges(ctx context.Context, blsToExecutionChanges []*capella.SignedBLSToExecutionChange) error
 }
 
 // BeaconBlockHeadersProvider is the interface for providing beacon block headers.
@@ -259,6 +246,12 @@ type BeaconCommitteeSubscriptionsSubmitter interface {
 type BeaconStateProvider interface {
 	// BeaconState fetches a beacon state given a state ID.
 	BeaconState(ctx context.Context, stateID string, options ...spec.BeaconStateOption) (*spec.VersionedBeaconState, error)
+}
+
+// BeaconStateRandaoProvider is the interface for providing beacon state RANDAOs.
+type BeaconStateRandaoProvider interface {
+	// BeaconStateRandao fetches a beacon state RANDAO given a state ID.
+	BeaconStateRandao(ctx context.Context, stateID string) (*phase0.Root, error)
 }
 
 // BeaconStateRootProvider is the interface for providing beacon state roots.
