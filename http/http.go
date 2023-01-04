@@ -57,6 +57,18 @@ func WithResponseViewer(viewer func(resp http.Response)) GetOption {
 	}
 }
 
+// Error represents an http error.
+type Error struct {
+	Method     string
+	Endpoint   string
+	StatusCode int
+	Data       []byte
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("%s failed with status %d: %s", e.Method, e.StatusCode, e.Data)
+}
+
 // get sends an HTTP get request and returns the body.
 // If the response from the server is a 404 this will return nil for both the reader and the error.
 func (s *Service) get(ctx context.Context, endpoint string, options ...GetOption) (io.Reader, error) {
@@ -91,8 +103,9 @@ func (s *Service) get(ctx context.Context, endpoint string, options ...GetOption
 		cancel()
 		return nil, errors.Wrap(err, "failed to call GET endpoint")
 	}
+	defer resp.Body.Close()
 
-	if resp.StatusCode == 404 {
+	if resp.StatusCode == http.StatusNotFound {
 		// Nothing found.  This is not an error, so we return nil on both counts.
 		cancel()
 		return nil, nil
@@ -113,7 +126,12 @@ func (s *Service) get(ctx context.Context, endpoint string, options ...GetOption
 	if statusFamily != 2 {
 		cancel()
 		log.Trace().Int("status_code", resp.StatusCode).Str("data", string(data)).Msg("GET failed")
-		return nil, fmt.Errorf("GET failed with status %d: %s", resp.StatusCode, string(data))
+		return nil, Error{
+			Method:     http.MethodGet,
+			StatusCode: resp.StatusCode,
+			Endpoint:   endpoint,
+			Data:       data,
+		}
 	}
 	cancel()
 
@@ -154,6 +172,7 @@ func (s *Service) post(ctx context.Context, endpoint string, body io.Reader) (io
 		cancel()
 		return nil, errors.Wrap(err, "failed to call POST endpoint")
 	}
+	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -165,7 +184,12 @@ func (s *Service) post(ctx context.Context, endpoint string, body io.Reader) (io
 	if statusFamily != 2 {
 		log.Trace().Int("status_code", resp.StatusCode).Str("data", string(data)).Msg("POST failed")
 		cancel()
-		return nil, fmt.Errorf("POST failed with status %d: %s", resp.StatusCode, string(data))
+		return nil, Error{
+			Method:     http.MethodPost,
+			StatusCode: resp.StatusCode,
+			Endpoint:   endpoint,
+			Data:       data,
+		}
 	}
 	cancel()
 
