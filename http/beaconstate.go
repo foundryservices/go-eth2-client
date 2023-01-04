@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
@@ -111,8 +112,19 @@ func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg spec.Be
 	// http responose headers, this function allows us to extract that header via a closure
 	var version spec.DataVersion
 	versionViewerFn := func(resp http.Response) {
-		_ = version.UnmarshalJSON([]byte(resp.Header.Get("Eth-Consensus-Version")))
-		// if this unmarshal errored we will catch it when parse the ssz struct
+		v := resp.Header.Get("Eth-Consensus-Version")
+		switch strings.ToLower(v) {
+		case spec.DataVersionPhase0.String():
+			version = spec.DataVersionPhase0
+		case spec.DataVersionAltair.String():
+			version = spec.DataVersionAltair
+		case spec.DataVersionBellatrix.String():
+			version = spec.DataVersionBellatrix
+		case spec.DataVersionCapella.String():
+			version = spec.DataVersionCapella
+		default:
+			panic(errors.Errorf("received unknown version type from node %s", v))
+		}
 	}
 
 	url := fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID)
@@ -133,10 +145,10 @@ func (s *Service) beaconStateV2(ctx context.Context, stateID string, cfg spec.Be
 	if cfg.Enc == spec.SSZEncoding {
 		return parseSSZBeaconState(respBodyReader, version)
 	}
-	return parseJSONBeconState(respBodyReader)
+	return parseJSONBeaconState(respBodyReader)
 }
 
-func parseJSONBeconState(respBodyReader io.Reader) (*spec.VersionedBeaconState, error) {
+func parseJSONBeaconState(respBodyReader io.Reader) (*spec.VersionedBeaconState, error) {
 	var dataBodyReader bytes.Buffer
 	metadataReader := io.TeeReader(respBodyReader, &dataBodyReader)
 	var metadata responseMetadata

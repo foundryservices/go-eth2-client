@@ -47,7 +47,8 @@ func (d *DataVersion) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements json.Unmarshaler.
 func (d *DataVersion) UnmarshalJSON(input []byte) error {
 	var err error
-	switch strings.ToLower(string(input)) {
+	v := strings.ToLower(string(input))
+	switch v {
 	case `"phase0"`:
 		*d = DataVersionPhase0
 	case `"altair"`:
